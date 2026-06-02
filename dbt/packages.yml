@@ -1,0 +1,19 @@
+# =============================================================================
+# dbt Packages - Dependencies
+# =============================================================================
+packages:
+  # dbt-utils: Essential utility macros
+  - package: dbt-labs/dbt_utils
+    version: ">=1.0.0"
+
+  # dbt-expectations: Great Expectations-like tests for dbt
+  - package: calogica/dbt_expectations
+    version: ">=0.10.0"
+
+  # dbt-date: Date dimension and utilities
+  - package: calogica/dbt_date
+    version: ">=0.10.0"
+
+  # Codegen: Generate model and source YAML
+  - package: dbt-labs/codegen
+    version: ">=0.12.0"

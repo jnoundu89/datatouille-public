@@ -1,0 +1,104 @@
+version: 2
+
+models:
+  - name: dim_toscrape_books
+    description: >
+      Book catalog dimension table (Gold layer).
+      Contains unique books extracted from books.toscrape.com, with standardized attributes
+      including titles, ratings, prices in GBP, and inventory levels. The grain is one row per book UPC code.
+    columns:
+      - name: book_key
+        description: "Primary key. Unique surrogate key generated using MD5 hash of the book's UPC code."
+        tests:
+          - unique
+          - not_null
+      - name: upc
+        description: "Universal Product Code. The business unique identifier for the book product."
+        tests:
+          - unique
+          - not_null
+      - name: title
+        description: "Title of the book."
+      - name: category
+        description: "Standardized book genre or category."
+        tests:
+          - not_null
+      - name: star_rating
+        description: "Star rating index (1 to 5 stars)."
+      - name: price
+        description: "Price of the book in British Pounds (GBP) excluding taxes."
+      - name: stock_count
+        description: "Current volume of physical copies available in stock."
+
+  - name: dim_toscrape_authors
+    description: >
+      Author dimension table (Gold layer).
+      Contains author profiles parsed and scraped from quotes.toscrape.com.
+      The grain is one row per author URL slug identifier.
+    columns:
+      - name: author_key
+        description: "Primary key. Unique surrogate key generated using MD5 hash of the author's slug."
+        tests:
+          - unique
+          - not_null
+      - name: author_slug
+        description: "URL-safe text slug representing the author (e.g., 'Albert-Einstein')."
+        tests:
+          - unique
+          - not_null
+      - name: author_name
+        description: "Full name of the author."
+        tests:
+          - not_null
+
+  - name: fct_toscrape_quotes
+    description: >
+      Quotes fact table (Gold layer).
+      Contains standard quote text fragments associated with their authors.
+      Granularity is one row per unique quote hash.
+    columns:
+      - name: quote_key
+        description: "Primary key. Unique surrogate key generated using MD5 hash of the quote text combined with the author slug."
+        tests:
+          - unique
+          - not_null
+      - name: quote_hash
+        description: "SHA256 signature hash of the quote content to enforce absolute uniqueness and prevent double ingestion."
+        tests:
+          - unique
+          - not_null
+      - name: author_key
+        description: "Foreign key linking to dim_toscrape_authors indicating the quote author."
+        tests:
+          - not_null
+      - name: quote_text
+        description: "The verbatim text content of the quote."
+
+  - name: rpt_toscrape_book_stats
+    description: >
+      Reporting and analytics table for the book catalog.
+      Aggregates book counts and pricing stats grouped by categories.
+      Feeds downstream Grafana dashboards for inventory valuation analysis.
+    columns:
+      - name: category
+        description: "Primary key. Book category representing the aggregation group."
+        tests:
+          - unique
+          - not_null
+      - name: book_count
+        description: "Total number of distinct books classified under this category."
+      - name: avg_price
+        description: "Arithmetic mean price of books in this category, in British Pounds (GBP)."
+
+  - name: rpt_toscrape_quote_stats
+    description: >
+      Reporting and analytics table for quotes metrics.
+      Aggregates total quotes counts published per author.
+    columns:
+      - name: author_name
+        description: "Primary key. Full name of the author serving as the aggregation group."
+        tests:
+          - unique
+          - not_null
+      - name: quote_count
+        description: "Total count of ingested quotes attributed to this author."

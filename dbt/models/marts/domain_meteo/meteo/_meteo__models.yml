@@ -1,0 +1,100 @@
+version: 2
+
+models:
+  - name: dim_communes
+    description: >
+      INSEE Commune dimension table (Gold layer).
+      This table represents the consolidated list of French municipalities (communes)
+      monitored by the platform. It merges geographic dimensions with the latest natural,
+      industrial, and technological risk indicators ingested from the official GeoRisques API.
+      Each record is unique per INSEE code.
+    columns:
+      - name: commune_id
+        description: "Primary key. Surrogate key generated dynamically by hashing the insee_code using MD5 to guarantee reference integrity across databases."
+        tests:
+          - unique
+          - not_null
+      - name: insee_code
+        description: "Official 5-digit INSEE code representing the French municipality (e.g., '75111' for Paris 11th arrondissement)."
+        tests:
+          - unique
+          - not_null
+      - name: commune
+        description: "Standardized human-readable name of the commune as resolved from the National Address Database (BAN)."
+      - name: department_code
+        description: "Two-digit department code (e.g., '75', '69', '13') identifying the department this commune belongs to."
+        tests:
+          - not_null
+      - name: total_risks
+        description: "Aggregated count of active technological, natural, and seismic risk profiles registered for this municipality."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: overall_max_severity
+        description: "The maximum severity level observed across all risks in this municipality (0 = Safe, 1 = Low, 2 = Medium, 3 = High severity)."
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 3
+
+  - name: fct_vigilance_alerts
+    description: >
+      Fact table for weather vigilance alerts (Gold layer).
+      Captures historical incremental records of departmental weather alerts issued by Météo France.
+      The grain of this table is one row per department, phenomenon, event time block, and ingestion date,
+      representing active alerts at the time of extraction.
+    columns:
+      - name: alert_key
+        description: "Primary key. Unique surrogate key generated via MD5 hash of the composite attributes: department_code, phenomenon_name, and extraction_date."
+        tests:
+          - unique
+          - not_null
+      - name: department_code
+        description: "Target department code where the vigilance alert is active."
+        tests:
+          - not_null
+      - name: phenomenon_name
+        description: "Type of meteorological threat monitored (e.g., Vent violent, Pluie-inondation, Orages, Neige-verglas, Grand froid, Canicule)."
+        tests:
+          - not_null
+      - name: color_level
+        description: "Standardized severity rating of the weather alert (1 = Green / No danger, 2 = Yellow / Be attentive, 3 = Orange = Very vigilant, 4 = Red / Extreme danger)."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 4
+      - name: extraction_date
+        description: "Reference business date indicating when the alert state was captured and ingested."
+        tests:
+          - not_null
+
+  - name: rpt_gie_risk_summary
+    description: >
+      Consolidated risk assessment reporting table.
+      Combines structural geological/technological hazards (GeoRisques) and dynamic weather alert metrics
+      (Météo France) aggregated at the department level. Used to feed downstream Grafana risk monitoring dashboards.
+    columns:
+      - name: department_code
+        description: "Primary key. Target department code serving as the geographic aggregation key."
+        tests:
+          - unique
+          - not_null
+      - name: monitored_communes
+        description: "Total number of communes currently monitored and active in this department."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: active_alert_count
+        description: "Number of active Orange or Red level meteorological alerts currently impacting the department."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0

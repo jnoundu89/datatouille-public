@@ -1,0 +1,110 @@
+version: 2
+
+sources:
+  - name: meteo
+    description: "Weather alerts and natural/technological risk data"
+    schema: public
+    tables:
+      - name: vigilance_alerts
+        description: "Météo France vigilance alerts by department"
+        columns:
+          - name: id
+            description: "Primary key"
+          - name: department_code
+            description: "French department code"
+          - name: department_name
+            description: "Department name"
+          - name: phenomenon_id
+            description: "Phenomenon type ID"
+          - name: phenomenon_name
+            description: "Phenomenon name (Vent, Pluie-Inondation, Orages, etc.)"
+          - name: begin_time
+            description: "Alert start time"
+          - name: end_time
+            description: "Alert end time"
+          - name: color_id
+            description: "Alert color ID"
+          - name: color_name
+            description: "Alert color name (Vert, Jaune, Orange, Rouge)"
+          - name: color_level
+            description: "Alert severity level (1-4)"
+          - name: color_hex
+            description: "Hex color code"
+          - name: extracted_at
+            description: "Extraction timestamp"
+          - name: extraction_date
+            description: "Extraction date"
+          - name: created_at
+            description: "Record creation timestamp"
+
+      - name: georisques_commune_profiles
+        description: "Risk profiles per commune from GeoRisques API"
+        columns:
+          - name: id
+            description: "Primary key"
+          - name: insee_code
+            description: "INSEE commune code"
+          - name: commune
+            description: "Commune name"
+          - name: code_postal
+            description: "Postal code"
+          - name: department_code
+            description: "Department code"
+          - name: department_name
+            description: "Department name"
+          - name: region
+            description: "Region name"
+          - name: naturels_count
+            description: "Number of natural risks present"
+          - name: technologiques_count
+            description: "Number of technological risks present"
+          - name: total_risks
+            description: "Total risks present"
+          - name: max_severity_naturels
+            description: "Maximum natural risk severity (0-3)"
+          - name: max_severity_technologiques
+            description: "Maximum technological risk severity (0-3)"
+          - name: seisme_present
+            description: "Earthquake risk present"
+          - name: rga_present
+            description: "Clay shrink-swell risk present"
+          - name: radon_present
+            description: "Radon risk present"
+          - name: inondation_present
+            description: "Flood risk present"
+          - name: icpe_present
+            description: "Industrial facilities risk present"
+          - name: nucleaire_present
+            description: "Nuclear risk present"
+          - name: extracted_at
+            description: "Extraction timestamp"
+          - name: extraction_date
+            description: "Extraction date"
+          - name: created_at
+            description: "Record creation timestamp"
+
+      - name: georisques_risk_details
+        description: "Individual risk details per commune"
+        columns:
+          - name: id
+            description: "Primary key"
+          - name: insee_code
+            description: "INSEE commune code"
+          - name: risk_category
+            description: "Risk category: naturel or technologique"
+          - name: risk_key
+            description: "Risk identifier (seisme, inondation, radon, etc.)"
+          - name: risk_libelle
+            description: "Human-readable risk label"
+          - name: present
+            description: "Whether the risk is present"
+          - name: severity_label
+            description: "Severity: faible, modere, eleve, inconnu"
+          - name: severity_score
+            description: "Severity score (0-3)"
+          - name: extracted_at
+            description: "Extraction timestamp"
+          - name: extraction_date
+            description: "Extraction date"
+          - name: created_at
+            description: "Record creation timestamp"

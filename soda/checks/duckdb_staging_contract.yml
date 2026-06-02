@@ -1,0 +1,65 @@
+# =============================================================================
+# Data Contract: dbt Staging Views (`dbt_docker_staging`)
+# =============================================================================
+# Purpose: Detect an upstream drop before it silently propagates to the DuckDB
+# marts. The mart contract (duckdb_marts_contract.yml) catches mart-level
+# regressions, but freshness starts its clock upstream — if leboncoin stops
+# scraping for 3 days, the marts stay "fresh" for 2 days before failing,
+# while the staging view is already stale at hour 0.
+#
+# Owner: data-platform
+# Source: dbt run --target docker (build_staging task of
+#   dbt_parquet_landing_refresh DAG)
+# Schedule: Every dbt_parquet_landing_refresh run, just after build_staging
+#   (not yet wired into the DAG — surfaced via `make soda-scan-duckdb-staging`)
+
+checks for stg_leboncoin_listings:
+  - row_count:
+      name: stg_leboncoin_listings is not empty
+      fail: when = 0
+  - missing_count(extraction_date) = 0
+  - freshness(extraction_date) < 2d
+
+checks for stg_leboncoin_search_registry:
+  # No extraction_date on the registry view — it's a reference table. Fall
+  # back to created_at for freshness.
+  - row_count:
+      name: stg_leboncoin_search_registry is not empty
+      fail: when = 0
+  - missing_count(search_slug) = 0
+  - duplicate_count(search_slug) = 0
+
+checks for stg_allkeyshop_game_offers:
+  - row_count:
+      name: stg_allkeyshop_game_offers is not empty
+      fail: when = 0
+  - missing_count(extraction_date) = 0
+  - freshness(extraction_date) < 2d
+
+checks for stg_allkeyshop_search_offers:
+  - row_count:
+      name: stg_allkeyshop_search_offers is not empty
+      fail: when = 0
+  - missing_count(extraction_date) = 0
+  - freshness(extraction_date) < 2d
+
+checks for stg_allkeyshop_game_info:
+  - row_count:
+      name: stg_allkeyshop_game_info is not empty
+      fail: when = 0
+  - missing_count(extraction_date) = 0
+  - freshness(extraction_date) < 2d
+
+checks for stg_allkeyshop_top50:
+  - row_count:
+      name: stg_allkeyshop_top50 is not empty
+      fail: when = 0
+  - missing_count(extraction_date) = 0
+  - freshness(extraction_date) < 2d
+
+checks for stg_dropreference_products:
+  - row_count:
+      name: stg_dropreference_products is not empty
+      fail: when = 0
+  - missing_count(extraction_date) = 0
+  - freshness(extraction_date) < 2d

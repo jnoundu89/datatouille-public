@@ -1,0 +1,162 @@
+# =============================================================================
+# Data Contract: GeoRisques Report
+# =============================================================================
+# Purpose: Validate natural and technological risk data from GeoRisques API
+# Owner: data-team
+# Consumer: Store operations, risk assessment dashboards
+#
+# Tables:
+#   - georisques_commune_profiles: Risk profiles by commune (INSEE code)
+#   - georisques_store_risks: Risks mapped to Store locations
+#   - georisques_risk_details: Detailed risk records per commune
+#
+# Severity Levels:
+#   - fail: Stops the pipeline immediately
+#   - warn: Logs warning but continues
+
+checks for georisques_commune_profiles:
+  # ===========================================================================
+  # Volume Contract - Expected data presence
+  # ===========================================================================
+  - row_count > 0:
+      name: Commune profiles table must have data
+      warn: when = 0
+
+  # ===========================================================================
+  # Freshness Contract - Data must be recent (weekly updates)
+  # ===========================================================================
+  - freshness(extracted_at) < 8d:
+      name: Data must be less than 8 days old
+      fail: when > 14d
+      warn: when > 8d
+
+  # ===========================================================================
+  # Schema Contract - Required columns must not be null
+  # ===========================================================================
+  - missing_count(insee_code) = 0:
+      name: INSEE code must never be null
+
+  - missing_count(extraction_date) = 0:
+      name: Extraction date must never be null
+
+  # ===========================================================================
+  # Data Quality Contract - Valid values
+  # ===========================================================================
+  - invalid_count(max_severity_naturels) = 0:
+      name: Max severity naturels must be 0-3
+      valid min: 0
+      valid max: 3
+
+  - invalid_count(max_severity_technologiques) = 0:
+      name: Max severity technologiques must be 0-3
+      valid min: 0
+      valid max: 3
+
+  - invalid_count(seisme_severity) = 0:
+      name: Seisme severity must be 0-3
+      valid min: 0
+      valid max: 3
+
+  - invalid_count(rga_severity) = 0:
+      name: RGA severity must be 0-3
+      valid min: 0
+      valid max: 3
+
+  # ===========================================================================
+  # Business Rules - Domain-specific validation
+  # ===========================================================================
+  - duplicate_count(insee_code, extraction_date) = 0:
+      name: No duplicate profiles for same commune/date
+
+  - total_risks >= 0:
+      name: Total risks must be non-negative
+
+  - naturels_count >= 0:
+      name: Naturels count must be non-negative
+
+  - technologiques_count >= 0:
+      name: Technologiques count must be non-negative
+
+checks for georisques_store_risks:
+  # ===========================================================================
+  # Volume Contract
+  # ===========================================================================
+  - row_count > 0:
+      name: Store risks table must have data
+      warn: when = 0
+
+  - row_count >= 300:
+      name: Should have data for most Stores (322 expected)
+      warn: when < 300
+
+  # ===========================================================================
+  # Freshness Contract
+  # ===========================================================================
+  - freshness(extracted_at) < 8d:
+      name: Store data must be less than 8 days old
+      fail: when > 14d
+      warn: when > 8d
+
+  # ===========================================================================
+  # Schema Contract
+  # ===========================================================================
+  - missing_count(store_name) = 0:
+      name: Store name must never be null
+
+  - missing_count(insee_code) = 0:
+      name: INSEE code must never be null
+
+  # ===========================================================================
+  # Data Quality Contract
+  # ===========================================================================
+  - invalid_count(max_severity_naturels) = 0:
+      name: Max severity naturels must be 0-3
+      valid min: 0
+      valid max: 3
+
+  # ===========================================================================
+  # Business Rules
+  # ===========================================================================
+  - duplicate_count(store_name, extraction_date) = 0:
+      name: No duplicate risks for same Store/date
+
+checks for georisques_risk_details:
+  # ===========================================================================
+  # Volume Contract
+  # ===========================================================================
+  - row_count > 0:
+      name: Risk details table must have data
+
+  # ===========================================================================
+  # Schema Contract
+  # ===========================================================================
+  - missing_count(insee_code) = 0:
+      name: INSEE code must never be null
+
+  - missing_count(risk_key) = 0:
+      name: Risk key must never be null
+
+  - missing_count(risk_category) = 0:
+      name: Risk category must never be null
+
+  # ===========================================================================
+  # Data Quality Contract
+  # ===========================================================================
+  - invalid_count(risk_category) = 0:
+      name: Risk category must be naturel or technologique
+      valid values: ['naturel', 'technologique']
+
+  - invalid_count(severity_label) = 0:
+      name: Severity label must be valid
+      valid values: ['inconnu', 'faible', 'modere', 'eleve']
+
+  - invalid_count(severity_score) = 0:
+      name: Severity score must be 0-3
+      valid min: 0
+      valid max: 3
+
+  # ===========================================================================
+  # Business Rules
+  # ===========================================================================
+  - duplicate_count(insee_code, risk_key, extraction_date) = 0:
+      name: No duplicate risk details for same commune/risk/date

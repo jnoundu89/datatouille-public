@@ -1,0 +1,58 @@
+version: 2
+
+sources:
+  - name: landing
+    description: "Landing zone data from Airflow ingestion pipelines"
+    schema: public
+    tables:
+      - name: toscrape_books
+        description: "Book catalog from books.toscrape.com"
+        columns:
+          - name: id
+            description: "Primary key"
+          - name: upc
+            description: "Universal Product Code (unique identifier)"
+          - name: title
+            description: "Book title"
+          - name: price
+            description: "Price excluding tax (GBP)"
+          - name: star_rating
+            description: "Star rating 1-5"
+          - name: category
+            description: "Book category"
+          - name: description
+            description: "Book description"
+          - name: extraction_date
+            description: "Date of data extraction"
+
+      - name: toscrape_quotes
+        description: "Quotes from quotes.toscrape.com"
+        columns:
+          - name: id
+            description: "Primary key"
+          - name: quote_hash
+            description: "SHA256 dedup hash"
+          - name: text
+            description: "Quote text"
+          - name: author_name
+            description: "Author name"
+          - name: tags
+            description: "JSON array of tags"
+          - name: extraction_date
+            description: "Date of data extraction"
+
+      - name: toscrape_authors
+        description: "Author biographies from quotes.toscrape.com"
+        columns:
+          - name: id
+            description: "Primary key"
+          - name: slug
+            description: "URL slug identifier"
+          - name: name
+            description: "Author full name"
+          - name: born_date
+            description: "Birth date string"
+          - name: born_location
+            description: "Birth location"
+          - name: description
+            description: "Author biography"

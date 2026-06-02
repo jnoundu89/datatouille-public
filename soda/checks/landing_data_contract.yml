@@ -1,0 +1,61 @@
+# =============================================================================
+# Data Contract: Landing Layer Validation
+# =============================================================================
+# Purpose: Validate transformed data in landing zone
+# Producer: raw-pipeline
+# Consumer: gold-pipeline / analytics
+#
+# Landing data should be:
+#   - Cleaned and standardized
+#   - Properly typed
+#   - Free of duplicates
+#   - Ready for analytics consumption
+
+# Example checks for landing data
+# Uncomment and modify for your actual tables
+
+# checks for landing_customers:
+#   # ===========================================================================
+#   # Schema Contract
+#   # ===========================================================================
+#   - schema:
+#       name: Landing schema validation
+#       fail:
+#         when forbidden column present:
+#           - pii_*
+#           - password*
+#           - secret*
+#       warn:
+#         when new column present: true
+
+#   # ===========================================================================
+#   # Referential Integrity
+#   # ===========================================================================
+#   # - values in (customer_id) must exist in dim_customers (id):
+#   #     name: Customer ID must exist in dimension table
+
+#   # ===========================================================================
+#   # Business Rules
+#   # ===========================================================================
+#   - failed rows:
+#       name: Email must be valid format
+#       fail condition: email !~ '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+
+#   - failed rows:
+#       name: Status must be valid enum
+#       fail condition: status not in ('active', 'inactive', 'pending', 'suspended')
+
+#   # ===========================================================================
+#   # Statistical Validation
+#   # ===========================================================================
+#   - avg(order_count) between 1 and 1000:
+#       name: Average order count in expected range
+
+#   # ===========================================================================
+#   # Anomaly Detection
+#   # ===========================================================================
+#   - anomaly detection for row_count:
+#       name: Row count anomaly check
+#       warn: when absolute diff > 50%
+
+# Note: pg_catalog checks removed - cross-schema references not supported in Soda

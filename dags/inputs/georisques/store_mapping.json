@@ -1,0 +1,27 @@
+{
+  "Store Paris Bastille": {
+    "postal_code": "75011",
+    "insee_code": "75111",
+    "commune": "Paris 11e Arrondissement"
+  },
+  "Store Lyon Part-Dieu": {
+    "postal_code": "69003",
+    "insee_code": "69383",
+    "commune": "Lyon 3e Arrondissement"
+  },
+  "Store Marseille Vieux-Port": {
+    "postal_code": "13001",
+    "insee_code": "13201",
+    "commune": "Marseille 1er Arrondissement"
+  },
+  "Store Bordeaux Centre": {
+    "postal_code": "33000",
+    "insee_code": "33063",
+    "commune": "Bordeaux"
+  },
+  "Store Lille Grand Place": {
+    "postal_code": "59000",
+    "insee_code": "59350",
+    "commune": "Lille"
+  }
+}

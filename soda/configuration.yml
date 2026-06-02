@@ -1,0 +1,39 @@
+# =============================================================================
+# Soda Core Configuration - Data Quality Platform
+# =============================================================================
+# Documentation: https://docs.soda.io/soda-core/configuration.html
+# Note: Using hardcoded values for Docker environment
+
+data_source postgres:
+  type: postgres
+  host: postgres
+  port: 5432
+  username: airflow
+  password: airflow
+  database: airflow
+  schema: public
+
+# DuckDB-owned canonical marts (written back to Postgres by the duckdb
+# target's postgres_writeback materialization). Used by the
+# duckdb_marts_contract.yml check file.
+data_source duckdb_marts:
+  type: postgres
+  host: postgres
+  port: 5432
+  username: airflow
+  password: airflow
+  database: airflow
+  schema: dbt_docker_marts
+
+# dbt-postgres staging views (materialized by the `build_staging` task of
+# dbt_parquet_landing_refresh). These are the upstream for both the DuckDB
+# marts AND the export_parquet_landing dump. Used by the
+# duckdb_staging_contract.yml check file.
+data_source duckdb_staging:
+  type: postgres
+  host: postgres
+  port: 5432
+  username: airflow
+  password: airflow
+  database: airflow
+  schema: dbt_docker_staging

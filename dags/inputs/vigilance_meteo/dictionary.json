@@ -1,0 +1,66 @@
+{
+    "phenomenons": [
+        {
+            "id": 1,
+            "name": "Vent"
+        },
+        {
+            "id": 2,
+            "name": "Pluie-inondation"
+        },
+        {
+            "id": 3,
+            "name": "Orages"
+        },
+        {
+            "id": 4,
+            "name": "Crues"
+        },
+        {
+            "id": 5,
+            "name": "Neige-verglas"
+        },
+        {
+            "id": 6,
+            "name": "Canicule"
+        },
+        {
+            "id": 7,
+            "name": "Grand froid"
+        },
+        {
+            "id": 8,
+            "name": "Avalanches"
+        },
+        {
+            "id": 9,
+            "name": "Vagues-submersion"
+        }
+    ],
+    "colors": [
+        {
+            "id": 1,
+            "level": 1,
+            "name": "vert",
+            "hexaCode": "#31aa35"
+        },
+        {
+            "id": 2,
+            "level": 2,
+            "name": "jaune",
+            "hexaCode": "#fff600"
+        },
+        {
+            "id": 3,
+            "level": 3,
+            "name": "orange",
+            "hexaCode": "#ffb82b"
+        },
+        {
+            "id": 4,
+            "level": 4,
+            "name": "rouge",
+            "hexaCode": "#CC0000"
+        }
+    ]
+}

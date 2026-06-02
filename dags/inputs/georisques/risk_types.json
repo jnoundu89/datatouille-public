@@ -1,0 +1,112 @@
+{
+  "natural_risks": {
+    "inondation": {
+      "code": "INOND",
+      "name": "Inondation",
+      "description": "Risque d'inondation par debordement de cours d'eau, ruissellement ou submersion marine",
+      "severity_levels": ["faible", "moyen", "fort", "tres_fort"]
+    },
+    "mouvement_terrain": {
+      "code": "MVT",
+      "name": "Mouvement de terrain",
+      "description": "Glissements, effondrements, eboulements, coulees de boue",
+      "severity_levels": ["faible", "moyen", "fort"]
+    },
+    "seisme": {
+      "code": "SEISME",
+      "name": "Seisme",
+      "description": "Risque sismique classe de 1 (tres faible) a 5 (fort)",
+      "severity_levels": ["1", "2", "3", "4", "5"]
+    },
+    "retrait_gonflement_argiles": {
+      "code": "RGA",
+      "name": "Retrait-gonflement des argiles",
+      "description": "Mouvements differentiels du sol lies aux variations d'humidite",
+      "severity_levels": ["faible", "moyen", "fort"]
+    },
+    "cavites_souterraines": {
+      "code": "CAVITE",
+      "name": "Cavites souterraines",
+      "description": "Risque d'effondrement lie aux cavites naturelles ou anthropiques",
+      "severity_levels": ["presence", "absence"]
+    },
+    "radon": {
+      "code": "RADON",
+      "name": "Radon",
+      "description": "Potentiel d'emission de radon du sol (gaz radioactif naturel)",
+      "severity_levels": ["1", "2", "3"]
+    },
+    "feu_foret": {
+      "code": "FEU",
+      "name": "Feu de foret",
+      "description": "Risque d'incendie de foret ou de vegetation",
+      "severity_levels": ["faible", "moyen", "eleve", "tres_eleve"]
+    },
+    "avalanche": {
+      "code": "AVAL",
+      "name": "Avalanche",
+      "description": "Risque d'avalanche en zone montagneuse",
+      "severity_levels": ["faible", "moyen", "fort"]
+    }
+  },
+  "technological_risks": {
+    "icpe": {
+      "code": "ICPE",
+      "name": "Installation classee",
+      "description": "Installation classee pour la protection de l'environnement",
+      "regimes": ["A", "E", "D", "NC"]
+    },
+    "seveso": {
+      "code": "SEVESO",
+      "name": "Site Seveso",
+      "description": "Etablissement presentant des risques d'accidents majeurs",
+      "seuils": ["SB", "SH"]
+    },
+    "nucleaire": {
+      "code": "NUC",
+      "name": "Installation nucleaire",
+      "description": "Installation nucleaire de base (INB)",
+      "zones": ["PPI", "surveillance"]
+    },
+    "transport_matieres_dangereuses": {
+      "code": "TMD",
+      "name": "Transport de matieres dangereuses",
+      "description": "Canalisations de transport de matieres dangereuses",
+      "types": ["gaz", "hydrocarbures", "produits_chimiques"]
+    },
+    "pollution_sols": {
+      "code": "SSP",
+      "name": "Sites et sols pollues",
+      "description": "Sites pollues ou potentiellement pollues appelant une action des pouvoirs publics",
+      "bases": ["BASOL", "BASIAS", "SIS", "SUP"]
+    }
+  },
+  "gaspar_resources": {
+    "catnat": {
+      "code": "CATNAT",
+      "name": "Catastrophe naturelle",
+      "description": "Arretes de reconnaissance de l'etat de catastrophe naturelle"
+    },
+    "ppr": {
+      "code": "PPR",
+      "name": "Plan de prevention des risques",
+      "description": "Documents reglementaires de prevention des risques",
+      "types": ["PPRN", "PPRT", "PPRM"]
+    },
+    "dicrim": {
+      "code": "DICRIM",
+      "name": "Document d'information communal",
+      "description": "Document d'information communal sur les risques majeurs"
+    },
+    "azi": {
+      "code": "AZI",
+      "name": "Atlas des zones inondables",
+      "description": "Cartographie des zones inondables"
+    },
+    "tri": {
+      "code": "TRI",
+      "name": "Territoire a risque important d'inondation",
+      "description": "Territoires identifies comme prioritaires pour la gestion du risque inondation"
+    }
+  }
+}

@@ -1,0 +1,71 @@
+# =============================================================================
+# dbt Profiles - Connection Configuration
+# =============================================================================
+# Note: In production, use environment variables for credentials
+# This file should NOT be committed to version control with real credentials
+
+ingestion_platform:
+  target: dev
+  outputs:
+    # Development environment (local Docker)
+    dev:
+      type: postgres
+      host: "{{ env_var('POSTGRES_HOST', 'localhost') }}"
+      port: "{{ env_var('POSTGRES_PORT', '5432') | int }}"
+      user: "{{ env_var('POSTGRES_USER', 'airflow') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD', 'airflow') }}"
+      dbname: "{{ env_var('POSTGRES_DB', 'airflow') }}"
+      schema: dbt_dev
+      threads: 4
+      keepalives_idle: 0
+      connect_timeout: 10
+
+    # Production environment
+    prod:
+      type: postgres
+      host: "{{ env_var('POSTGRES_HOST') }}"
+      port: "{{ env_var('POSTGRES_PORT') | int }}"
+      user: "{{ env_var('POSTGRES_USER') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD') }}"
+      dbname: "{{ env_var('POSTGRES_DB') }}"
+      schema: dbt_prod
+      threads: 8
+      keepalives_idle: 0
+      connect_timeout: 10
+
+    # Docker environment (when running inside containers)
+    docker:
+      type: postgres
+      host: postgres
+      port: 5432
+      user: airflow
+      password: airflow
+      dbname: airflow
+      schema: dbt_docker
+      threads: 4
+
+    # DuckDB analytical target (POC - Phase 1)
+    # Reads upstream staging from Postgres via postgres_scanner (attach alias: pg_src).
+    # Materializes marts into a local .duckdb file. Does NOT replace the postgres target.
+    # Usage: dbt run --target duckdb -s fct_listing_prices rpt_listing_price_trends
+    # Prereq: the postgres staging views must already exist (run target=dev/docker first).
+    duckdb:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', '/tmp/dbt_duckdb/analytics.duckdb') }}"
+      threads: 4
+      extensions:
+        - httpfs
+        - postgres_scanner
+      attach:
+        - path: "dbname={{ env_var('POSTGRES_DB', 'airflow') }} host={{ env_var('POSTGRES_HOST', 'localhost') }} port={{ env_var('POSTGRES_PORT', '5432') }} user={{ env_var('POSTGRES_USER', 'airflow') }} password={{ env_var('POSTGRES_PASSWORD', 'airflow') }}"
+          type: postgres
+          alias: pg_src
+      settings:
+        # DuckDB s3_endpoint wants host:port only. Strip any http(s):// prefix
+        # so MINIO_ENDPOINT can be set either way (docker-compose sets it with
+        # scheme, the DAG overrides it without).
+        s3_endpoint: "{{ env_var('MINIO_ENDPOINT', 'minio:9000') | replace('https://', '') | replace('http://', '') }}"
+        s3_access_key_id: "{{ env_var('MINIO_ACCESS_KEY', 'minioadmin') }}"
+        s3_secret_access_key: "{{ env_var('MINIO_SECRET_KEY', 'minioadmin') }}"
+        s3_url_style: path
+        s3_use_ssl: false

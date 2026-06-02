@@ -1,0 +1,90 @@
+version: 2
+
+models:
+  - name: stg_vigilance_alerts
+    description: >
+      Staging model for Météo France vigilance alerts (Staging layer).
+      Ingests raw records from MinIO, parses complex nested attributes, standardizes phenomenon names
+      into clean labels, and casts data types (such as mapping string colors to integers).
+      Each record is validated and clean.
+    columns:
+      - name: alert_row_id
+        description: "Primary key. Unique hash signature representing the row."
+        tests:
+          - unique
+          - not_null
+      - name: department_code
+        description: "Standardized department identifier (2 or 3 alphanumeric characters)."
+        tests:
+          - not_null
+      - name: phenomenon_name
+        description: "Weather threat category (Vent, Vague-Submersion, Inondation, Orages, Grand Froid, Neige, Canicule)."
+        tests:
+          - not_null
+      - name: color_level
+        description: "Standardized severity score mapping: 1 (Green/No risk) to 4 (Red/Severe risk)."
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 4
+      - name: extraction_date
+        description: "Ingestion partition date identifier."
+        tests:
+          - not_null
+
+  - name: stg_georisques_commune_profiles
+    description: >
+      Staging model for GeoRisques commune-level risk profiles (Staging layer).
+      Selects primary risk counts and seismic indicators for French communes, casting codes and cleansing text formats.
+    columns:
+      - name: profile_row_id
+        description: "Primary key. Unique hash signature representing the commune profile row."
+        tests:
+          - unique
+          - not_null
+      - name: insee_code
+        description: "INSEE commune code identifier."
+        tests:
+          - not_null
+      - name: total_risks
+        description: "Aggregated count of active technological and natural risk factors."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: extraction_date
+        description: "Ingestion partition date identifier."
+        tests:
+          - not_null
+
+  - name: stg_georisques_risk_details
+    description: >
+      Staging model for GeoRisques risk category breakdowns (Staging layer).
+      Splits general profiles into individual rows representing detailed risks (like flooding, clay, or industrial facilities) per municipality.
+    columns:
+      - name: detail_row_id
+        description: "Primary key. Unique hash signature representing the detail row."
+        tests:
+          - unique
+          - not_null
+      - name: insee_code
+        description: "INSEE commune code identifier."
+        tests:
+          - not_null
+      - name: risk_key
+        description: "Technical risk identifier string."
+        tests:
+          - not_null
+      - name: severity_score
+        description: "Assigned severity metric: 0 (No risk) to 3 (High risk/hazard)."
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 3
+      - name: extraction_date
+        description: "Ingestion partition date identifier."
+        tests:
+          - not_null

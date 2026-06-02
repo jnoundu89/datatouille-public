@@ -1,0 +1,141 @@
+# =============================================================================
+# Data Contract: Toscrape (Books + Quotes + Authors)
+# =============================================================================
+# Purpose: Validate toscrape tables quality
+# Owner: data-team
+# Source: books.toscrape.com, quotes.toscrape.com
+# Schedule: After toscrape_books_ingestion and toscrape_quotes_ingestion DAGs
+
+checks for toscrape_books:
+  # Schema
+  - schema:
+      name: Validate toscrape_books schema
+      fail:
+        when required column missing:
+          - id
+          - upc
+          - title
+          - price
+
+  # Volume - expect ~1000 books
+  - row_count:
+      name: Books volume check
+      fail: when = 0
+      warn: when < 900
+
+  - row_count < 1500:
+      name: Books should not exceed 1500 entries
+
+  # Quality
+  - missing_count(upc) = 0:
+      name: UPC must never be null
+
+  - missing_count(title) = 0:
+      name: Title must never be null
+
+  - missing_percent(category) < 5%:
+      name: Category should be present
+
+  - missing_percent(price) < 1%:
+      name: Price should be present
+
+  # Consistency
+  - duplicate_count(upc) = 0:
+      name: No duplicate UPCs
+
+  # Business rules
+  - min(price) >= 0:
+      name: Price cannot be negative
+      filter: price IS NOT NULL
+
+  - max(price) <= 200:
+      name: Price should be reasonable
+      filter: price IS NOT NULL
+
+  - min(star_rating) >= 1:
+      name: Rating minimum is 1
+      filter: star_rating IS NOT NULL
+
+  - max(star_rating) <= 5:
+      name: Rating maximum is 5
+      filter: star_rating IS NOT NULL
+
+  - min(stock_count) >= 0:
+      name: Stock count cannot be negative
+      filter: stock_count IS NOT NULL
+
+  # Freshness
+  - freshness(extracted_at) < 14d:
+      name: Book data must be less than 14 days old
+
+
+checks for toscrape_quotes:
+  # Schema
+  - schema:
+      name: Validate toscrape_quotes schema
+      fail:
+        when required column missing:
+          - id
+          - quote_hash
+          - text
+          - author_name
+
+  # Volume - expect ~100 quotes
+  - row_count:
+      name: Quotes volume check
+      fail: when = 0
+      warn: when < 80
+
+  # Quality
+  - missing_count(quote_hash) = 0:
+      name: Quote hash must never be null
+
+  - missing_count(text) = 0:
+      name: Quote text must never be null
+
+  - missing_count(author_name) = 0:
+      name: Author name must never be null
+
+  # Consistency
+  - duplicate_count(quote_hash) = 0:
+      name: No duplicate quote hashes
+
+  # Business rules
+  - avg_length(text) between 10 and 500:
+      name: Quote text length reasonable
+
+  # Freshness
+  - freshness(extracted_at) < 14d:
+      name: Quote data must be less than 14 days old
+
+
+checks for toscrape_authors:
+  # Schema
+  - schema:
+      name: Validate toscrape_authors schema
+      fail:
+        when required column missing:
+          - id
+          - slug
+          - name
+
+  # Volume
+  - row_count:
+      name: Authors volume check
+      fail: when = 0
+      warn: when < 30
+
+  # Quality
+  - missing_count(slug) = 0:
+      name: Slug must never be null
+
+  - missing_count(name) = 0:
+      name: Name must never be null
+
+  # Consistency
+  - duplicate_count(slug) = 0:
+      name: No duplicate author slugs
+
+  # Freshness
+  - freshness(extracted_at) < 14d:
+      name: Author data must be less than 14 days old

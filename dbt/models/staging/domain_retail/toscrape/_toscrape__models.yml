@@ -1,0 +1,55 @@
+version: 2
+
+models:
+  - name: stg_toscrape_books
+    description: >
+      Staging model for toscrape books (Staging layer).
+      Cleans and standardizes book catalog data extracted from books.toscrape.com.
+      Handles parsing of star ratings, prices, and stock volumes.
+    columns:
+      - name: book_id
+        description: "Primary key. Unique identifier signature generated for the book."
+        tests:
+          - unique
+          - not_null
+      - name: upc
+        description: "Universal Product Code representing the book barcode."
+        tests:
+          - unique
+          - not_null
+      - name: title
+        description: "Cleansed book title."
+        tests:
+          - not_null
+      - name: star_rating
+        description: "Numeric star rating score from 1 to 5."
+        tests:
+          - accepted_values:
+              config:
+                where: "star_rating is not null"
+              arguments:
+                values: [1, 2, 3, 4, 5]
+      - name: price
+        description: "Standard decimal price formatted in GBP."
+      - name: stock_count
+        description: "Standardized stock volume quantity."
+
+  - name: stg_toscrape_quotes
+    description: >
+      Staging model for toscrape quotes (Staging layer).
+      Processes text fragments and author attributions, standardizing names and hashes.
+    columns:
+      - name: quote_id
+        description: "Primary key. Unique identifier signature generated for the quote."
+        tests:
+          - unique
+          - not_null
+      - name: quote_hash
+        description: "Deduplication signature hash calculated over the content."
+        tests:
+          - unique
+          - not_null
+      - name: author_name
+        description: "Attributed author name."
+        tests:
+          - not_null

@@ -1,0 +1,125 @@
+# =============================================================================
+# Data Contract: DuckDB-owned Canonical Marts (`dbt_docker_marts`)
+# =============================================================================
+# Purpose: Guard the 8 rpt_* tables that DuckDB writes back to Postgres for
+# Grafana via postgres_writeback. Every dashboard panel migrated in #46-#51
+# reads from these — so a silent drop to 0 rows here is a Grafana outage.
+# Owner: data-platform
+# Source: dbt_parquet_landing_refresh DAG (hourly) → DuckDB → postgres_writeback
+# Schedule: After each dbt_parquet_landing_refresh run
+
+checks for rpt_listing_price_trends:
+  - schema:
+      name: rpt_listing_price_trends schema is stable
+      fail:
+        when required column missing:
+          - search_slug
+          - extraction_date
+          - listing_count
+          - avg_price
+          - min_price
+          - max_price
+          - median_price
+  - row_count:
+      name: rpt_listing_price_trends is not empty
+      fail: when = 0
+  - missing_count(search_slug) = 0
+  - missing_count(extraction_date) = 0
+  - duplicate_count(search_slug, extraction_date) = 0
+  - freshness(extraction_date) < 2d
+
+checks for rpt_allkeyshop_price_trends:
+  - schema:
+      name: rpt_allkeyshop_price_trends schema is stable
+      fail:
+        when required column missing:
+          - product_name
+          - extraction_date
+          - offer_count
+          - avg_price
+  - row_count:
+      name: rpt_allkeyshop_price_trends is not empty
+      fail: when = 0
+  - missing_count(product_name) = 0
+  - duplicate_count(product_name, extraction_date) = 0
+  - freshness(extraction_date) < 2d
+
+checks for rpt_allkeyshop_search_trends:
+  - schema:
+      name: rpt_allkeyshop_search_trends schema is stable
+      fail:
+        when required column missing:
+          - search_query
+          - extraction_date
+          - offer_count
+          - avg_price
+  - row_count:
+      name: rpt_allkeyshop_search_trends is not empty
+      fail: when = 0
+  - missing_count(search_query) = 0
+  - duplicate_count(search_query, extraction_date) = 0
+  - freshness(extraction_date) < 2d
+
+checks for rpt_allkeyshop_best_deals:
+  - schema:
+      name: rpt_allkeyshop_best_deals schema is stable
+      fail:
+        when required column missing:
+          - deal_rank
+          - product_name
+          - merchant_name
+          - price
+          - extraction_date
+  - row_count:
+      name: rpt_allkeyshop_best_deals is not empty
+      fail: when = 0
+  - freshness(extraction_date) < 2d
+
+checks for rpt_dropreference_price_trends:
+  - schema:
+      name: rpt_dropreference_price_trends schema is stable
+      fail:
+        when required column missing:
+          - category
+          - name
+          - extraction_date
+          - observation_count
+          - avg_price
+  - row_count:
+      name: rpt_dropreference_price_trends is not empty
+      fail: when = 0
+  - missing_count(category) = 0
+  - duplicate_count(category, name, extraction_date) = 0
+  - freshness(extraction_date) < 2d
+
+checks for rpt_dropreference_best_deals:
+  - schema:
+      name: rpt_dropreference_best_deals schema is stable
+      fail:
+        when required column missing:
+          - deal_rank
+          - category
+          - name
+          - merchant
+          - price
+          - extraction_date
+  - row_count:
+      name: rpt_dropreference_best_deals is not empty
+      fail: when = 0
+  - freshness(extraction_date) < 2d
+
+checks for rpt_search_stats:
+  - schema:
+      name: rpt_search_stats schema is stable
+      fail:
+        when required column missing:
+          - search_slug
+          - latest_extraction_date
+          - listing_count
+          - avg_price
+  - row_count:
+      name: rpt_search_stats is not empty
+      fail: when = 0
+  - missing_count(search_slug) = 0
+  - duplicate_count(search_slug) = 0
+  - freshness(latest_extraction_date) < 2d

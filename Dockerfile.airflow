@@ -1,0 +1,44 @@
+# Multi-stage build: use scrapling image to get Playwright browsers
+FROM ghcr.io/d4vinci/scrapling:latest AS scrapling-stage
+
+# Airflow with Scrapling (Playwright for anti-bot bypass)
+FROM apache/airflow:3.1.6
+
+USER root
+
+# Install system dependencies for Playwright browsers
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libdbus-1-3 \
+    libxkbcommon0 \
+    libatspi2.0-0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
+    libpango-1.0-0 \
+    libcairo2 \
+    libxshmfence1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Playwright browsers from scrapling image
+COPY --from=scrapling-stage /root/.cache/ms-playwright /home/airflow/.cache/ms-playwright
+
+# Create cache directories with proper permissions
+RUN mkdir -p /home/airflow/.cache/python-tldextract \
+    && chown -R airflow:root /home/airflow/.cache
+
+USER airflow
+
+ENV PLAYWRIGHT_BROWSERS_PATH=/home/airflow/.cache/ms-playwright
+
+# Install Python dependencies from pyproject.toml (single source of truth)
+COPY pyproject.toml /opt/airflow/
+RUN pip install --no-cache-dir -e ".[soda]"

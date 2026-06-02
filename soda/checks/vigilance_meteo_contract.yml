@@ -1,0 +1,117 @@
+# =============================================================================
+# Data Contract: Vigilance Meteo France
+# =============================================================================
+# Purpose: Validate weather alert data from Meteo France API
+# Owner: data-team
+# Consumer: GIE operations, dashboard visualizations
+#
+# Tables:
+#   - vigilance_alerts: Alerts by department
+#   - vigilance_gie_alerts: Alerts mapped to GIE locations
+#
+# Severity Levels:
+#   - fail: Stops the pipeline immediately
+#   - warn: Logs warning but continues
+
+checks for vigilance_alerts:
+  # ===========================================================================
+  # Volume Contract - Expected data presence
+  # ===========================================================================
+  - row_count > 0:
+      name: Alerts table must have data
+      warn: when = 0
+
+  # ===========================================================================
+  # Freshness Contract - Data must be recent
+  # ===========================================================================
+  - freshness(extracted_at) < 4h:
+      name: Data must be less than 4 hours old
+      fail: when > 8h
+      warn: when > 4h
+
+  # ===========================================================================
+  # Schema Contract - Required columns must not be null
+  # ===========================================================================
+  - missing_count(department_code) = 0:
+      name: Department code must never be null
+
+  - missing_count(phenomenon_name) = 0:
+      name: Phenomenon name must never be null
+
+  - missing_count(color_level) = 0:
+      name: Color level must never be null
+
+  - missing_count(extraction_date) = 0:
+      name: Extraction date must never be null
+
+  # ===========================================================================
+  # Data Quality Contract - Valid values
+  # ===========================================================================
+  - invalid_count(color_level) = 0:
+      name: Color level must be 1-4
+      valid values: [1, 2, 3, 4]
+
+  - invalid_count(color_name) = 0:
+      name: Color name must be valid
+      valid values: ['vert', 'jaune', 'orange', 'rouge']
+
+  # ===========================================================================
+  # Business Rules - Domain-specific validation
+  # ===========================================================================
+  - duplicate_count(department_code, phenomenon_id, begin_time, extraction_date) = 0:
+      name: No duplicate alerts for same department/phenomenon/time
+
+checks for vigilance_gie_alerts:
+  # ===========================================================================
+  # Volume Contract
+  # ===========================================================================
+  - row_count > 0:
+      name: GIE alerts table must have data
+      warn: when = 0
+
+  # ===========================================================================
+  # Freshness Contract
+  # ===========================================================================
+  - freshness(extracted_at) < 4h:
+      name: GIE data must be less than 4 hours old
+      fail: when > 8h
+      warn: when > 4h
+
+  # ===========================================================================
+  # Schema Contract
+  # ===========================================================================
+  - missing_count(gie_name) = 0:
+      name: GIE name must never be null
+
+  - missing_count(phenomenon_name) = 0:
+      name: Phenomenon name must never be null
+
+  - missing_count(alert_level) = 0:
+      name: Alert level must never be null
+
+  # ===========================================================================
+  # Data Quality Contract
+  # ===========================================================================
+  - invalid_count(alert_level) = 0:
+      name: Alert level must be valid color name
+      valid values: ['vert', 'jaune', 'orange', 'rouge']
+
+  # ===========================================================================
+  # Business Rules
+  # ===========================================================================
+  - duplicate_count(gie_name, phenomenon_name, begin_time, extraction_date) = 0:
+      name: No duplicate alerts for same GIE/phenomenon/time
+
+checks for vigilance_metadata:
+  # ===========================================================================
+  # Reference Data Contract
+  # ===========================================================================
+  - row_count >= 13:
+      name: Metadata must have all phenomenons (9) and colors (4)
+
+  - invalid_count(type) = 0:
+      name: Type must be phenomenon or color
+      valid values: ['phenomenon', 'color']
+
+  - duplicate_count(type, code) = 0:
+      name: Metadata entries must be unique by type and code
